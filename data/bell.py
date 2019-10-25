@@ -99,16 +99,18 @@ pg.display.set_icon(aji_ico)
 # button
 
 button_red = button(bg, [icon_path + "button_small.png", icon_path + "button_small_green.png"],
-                    (163, height*3/4 - 57), ["",""])
+                    (163, height*3/4 - 57), [["",""]])
 button_red.pressed = True
 button_comm = button(bg, [icon_path + "button_comm.png", icon_path + "button_comm_pressed.png"], 
-                    (163, height*3/4 + 23), ["",""])
+                    (163, height*3/4 + 23), [["",""]])
 
 
 button_list = [button(bg, [icon_path + "unpressed.png", icon_path + "pressed.png"], 
-                    (680, height*3/4 - 57 + 65*i), ["%02d:%02d"%schedule[i],"%02d:%02d"%schedule[i]]) for i in range(len(schedule))]
+                    (680, height*3/4 - 57 + 65*i), [["%02d:%02d"%schedule[i],"%02d:%02d"%schedule[i]], [playlist[i],playlist[i]]], font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)]) for i in range(len(schedule))]
+button_list.append(button(bg, [icon_path + "unpressed_plus.png", icon_path + "pressed_plus.png"], 
+                    (680, height*3/4 - 57 + 65*len(button_list)), [["",""]], font = ["Calibri"], font_size = [80], text_pos = [(0,0)]))
 button_list_y = 0
-button_list_y_max = len(schedule)*65 - 160
+button_list_y_max = len(button_list)*65 - 160
 
 
 # volume trash
