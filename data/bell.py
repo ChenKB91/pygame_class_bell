@@ -3,7 +3,7 @@ import csv
 from datetime import*
 import time
 import random
-from ctypes import windll
+# from ctypes import windll
 import ctypes
 from button_class import*
 
@@ -35,8 +35,8 @@ with open(os.devnull, 'w') as f:
 schedule = []
 playlist = []
 
-musics_path = os.getcwd()[0:-4] + "musics\\"
-icon_path = os.getcwd() + "\\ygyy\\"
+musics_path = os.getcwd()[:-4] + "/musics/"
+icon_path = os.getcwd() + "/icon/"
 
 
 def refresh_schedule():
@@ -78,8 +78,8 @@ refresh_time = (23, 59)
 
 
 previous_time = (datetime.now().hour, datetime.now().minute)
-musics_path = os.getcwd()[0:-4] + "musics\\"
-icon_path = os.getcwd() + "\\icon\\"
+# musics_path = os.getcwd()[0:-4] + "musics\\"
+# icon_path = os.getcwd() + "\\icon\\"
 
 
 # pygame trash
@@ -105,7 +105,7 @@ button_comm = button(bg, [icon_path + "button_comm.png", icon_path + "button_com
                     (163, height*3/4 + 23), ["",""])
 
 
-button_list = [button(bg, [icon_path + "unpressed.png", icon_path + "pressed.png"], 
+button_list = [button(bg, [icon_path + "buttonup.png", icon_path + "buttondown.png"], 
                     (680, height*3/4 - 57 + 65*i), ["%02d:%02d"%schedule[i],"%02d:%02d"%schedule[i]]) for i in range(len(schedule))]
 button_list_y = 0
 button_list_y_max = len(schedule)*65 - 160
@@ -121,12 +121,12 @@ volume_mute = 0x08
 def play_ring(ring):
     r = random.random()
     if button_red.pressed == True:
-        for i in range(50):
-            windll.user32.PostMessageA(
-                windll.user32.GetForegroundWindow(), 0x319, 0, volume_down*0x10000)
-        for i in range(35):
-            windll.user32.PostMessageA(
-                windll.user32.GetForegroundWindow(), 0x319, 0, volume_up*0x10000)
+        # for i in range(50):
+        #     windll.user32.PostMessageA(
+        #         windll.user32.GetForegroundWindow(), 0x319, 0, volume_down*0x10000)
+        # for i in range(35):
+        #     windll.user32.PostMessageA(
+        #         windll.user32.GetForegroundWindow(), 0x319, 0, volume_up*0x10000)
 
         pg.mixer.init()
         pg.mixer.music.load(musics_path+ring)
