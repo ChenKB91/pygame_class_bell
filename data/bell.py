@@ -33,19 +33,26 @@ with open(os.devnull, 'w') as f:
 #  \_______|\_______/     \_/             \____/ \__|      \_______|\_______/ \__|  \__|
 
 schedule = []
+active = []
 playlist = []
+
 
 musics_path = os.getcwd()[0:-4] + "musics\\"
 icon_path = os.getcwd() + "\\ygyy\\"
 
 
-def refresh_schedule():
+def load_schedule():
     with open('schedule.csv') as schedule_csv:
         rows = csv.reader(schedule_csv)
         for row in rows:
-            if row[0:3] != ["HOUR", "MINUTE", "MUSIC"]:
+            if row[0:4] != ["HOUR", "MINUTE", "MUSIC","NOT_ACTIVE"]:
 
                 schedule.append((int(row[0]), int(row[1])))
+
+                if row[3] == "TRUE":    
+                    active.append(False)
+                else:
+                    active.append(True)
 
                 if row[2][-3:] == "mp3":
                     playlist.append(row[2])
@@ -63,7 +70,15 @@ def refresh_schedule():
                                     break
 
 
-refresh_schedule()
+def write_schedule():
+    with open('schedule.csv', 'w') as schedule_csv:
+        writer = csv.writer(schedule_csv)
+        writer.writerow(["HOUR", "MINUTE", "MUSIC","NOT_ACTIVE"])
+        for i in range(len(schedule)):
+            writer.writerow([schedule[i][0], schedule[i][1], playlist[i], button_list[i].pressed])
+
+
+load_schedule()
 refresh_time = (23, 59)
 
 
@@ -104,14 +119,23 @@ button_red.pressed = True
 button_comm = button(bg, [icon_path + "button_comm.png", icon_path + "button_comm_pressed.png"], 
                     (163, height*3/4 + 23), [["",""]])
 
+def button_list_inital():
+    button_list = [button(bg, [icon_path + "unpressed.png", icon_path + "pressed.png"], 
+                        (680, height*3/4 - 57 + 65*i), [["%02d:%02d"%schedule[i],"%02d:%02d"%schedule[i]], [playlist[i],playlist[i]]],
+                        font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)], pressed=active[i]) for i in range(len(schedule))]
+    button_list.append(button(bg, [icon_path + "unpressed_plus.png", icon_path + "pressed_plus.png"], 
+                        (680, height*3/4 - 57 + 65*len(button_list)), [["",""]], font = ["Calibri"], font_size = [80], text_pos = [(0,0)]))
 
-button_list = [button(bg, [icon_path + "unpressed.png", icon_path + "pressed.png"], 
-                    (680, height*3/4 - 57 + 65*i), [["%02d:%02d"%schedule[i],"%02d:%02d"%schedule[i]], [playlist[i],playlist[i]]], font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)]) for i in range(len(schedule))]
-button_list.append(button(bg, [icon_path + "unpressed_plus.png", icon_path + "pressed_plus.png"], 
-                    (680, height*3/4 - 57 + 65*len(button_list)), [["",""]], font = ["Calibri"], font_size = [80], text_pos = [(0,0)]))
-button_list_y = 0
-button_list_y_max = len(button_list)*65 - 160
+    button_delete = [button(surface=bg, image_path=[icon_path + "delete.png", icon_path + "delete.png"], 
+                        pos=(845, height*3/4 - 53 + 65*i), text=[["",""], ["",""]],
+                        font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)]) for i in range(len(schedule))]
 
+    button_list_y = 0
+    button_list_y_max = len(button_list)*65 - 160
+
+    global button_list, button_delete, button_list_y, button_list_y_max
+
+button_list_inital()
 
 # volume trash
 volume_down = 0x0a
@@ -151,7 +175,8 @@ while running:
     if (now.hour, now.minute) != previous_time:
         if (now.hour, now.minute) in schedule:
             print("\rLatest bell time:   %d:%d" % (now.hour, now.minute))
-            play_ring(playlist[schedule.index((now.hour, now.minute))])
+            if button_list[schedule.index((now.hour, now.minute))].pressed == False:
+                play_ring(playlist[schedule.index((now.hour, now.minute))])
         elif (now.hour, now.minute) == refresh_time:
             running = False
 
@@ -175,6 +200,9 @@ while running:
     button_red.draw()
     button_comm.draw()
     for i in button_list:
+        if i.pos[1]+60 > height*3/4 - 63 and i.pos[1] < height*3/4 + 103:
+            i.draw()
+    for i in button_delete:
         if i.pos[1]+60 > height*3/4 - 63 and i.pos[1] < height*3/4 + 103:
             i.draw()
     [pg.draw.rect(bg, (0,0,0), [674, height*3/4 - 143 + i, 191, 80], 0) for i in [0,246]]
@@ -232,6 +260,13 @@ while running:
 
             if button_list_box.collidepoint(event.pos):
                 [i.detect(event.pos) for i in button_list]
+                for i in range(len(button_delete)):
+                    signal = button_delete[i].detect(event.pos)
+                    if signal == "pressed":
+                        del schedule[i], playlist[i]
+                        button_list_inital()
+                        break
+                write_schedule()
 
 
         elif event.type == pg.MOUSEBUTTONDOWN and event.button in [4,5]: 
@@ -250,3 +285,5 @@ while running:
 
                 for i in range(len(button_list)):
                     button_list[i].pos = (680, height*3/4 - 57 + 65*i - button_list_y)
+                for i in range(len(button_delete)):
+                    button_delete[i].pos = (845, height*3/4 - 53 + 65*i - button_list_y)
