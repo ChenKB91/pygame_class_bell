@@ -5,32 +5,20 @@ import time
 import random
 from ctypes import windll
 import ctypes
+import Tkinter, tkFileDialog
 from button_class import*
 
 # Programmed by CKB, THE CHAIRMAN OF THE MIGHTY TANU TUVA SSR
 
-# hide welcome message
-# because it is annoying
+# hide welcome message cuz it is annoying
 import os
 import sys
 with open(os.devnull, 'w') as f:
     # disable stdout
     oldstdout = sys.stdout
     sys.stdout = f
-
     import pygame as pg
-
-    # enable stdout
     sys.stdout = oldstdout
-
-#                                        $$\                                  $$\
-#                                        $$ |                                 $$ |
-#  $$$$$$$\  $$$$$$$\ $$\    $$\       $$$$$$\    $$$$$$\  $$$$$$\   $$$$$$$\ $$$$$$$\
-# $$  _____|$$  _____|\$$\  $$  |      \_$$  _|  $$  __$$\ \____$$\ $$  _____|$$  __$$\
-# $$ /      \$$$$$$\   \$$\$$  /         $$ |    $$ |  \__|$$$$$$$ |\$$$$$$\  $$ |  $$ |
-# $$ |       \____$$\   \$$$  /          $$ |$$\ $$ |     $$  __$$ | \____$$\ $$ |  $$ |
-# \$$$$$$$\ $$$$$$$  |   \$  /           \$$$$  |$$ |     \$$$$$$$ |$$$$$$$  |$$ |  $$ |
-#  \_______|\_______/     \_/             \____/ \__|      \_______|\_______/ \__|  \__|
 
 schedule = []
 active = []
@@ -48,11 +36,10 @@ def load_schedule():
             if row[0:4] != ["HOUR", "MINUTE", "MUSIC","NOT_ACTIVE"]:
 
                 schedule.append((int(row[0]), int(row[1])))
-
-                if row[3] == "TRUE":    
-                    active.append(False)
-                else:
+                if row[3] == "True":    
                     active.append(True)
+                else:
+                    active.append(False)
 
                 if row[2][-3:] == "mp3":
                     playlist.append(row[2])
@@ -69,7 +56,6 @@ def load_schedule():
                                     playlist.append(prob_row[0])
                                     break
 
-
 def write_schedule():
     with open('schedule.csv', 'w') as schedule_csv:
         writer = csv.writer(schedule_csv)
@@ -77,20 +63,7 @@ def write_schedule():
         for i in range(len(schedule)):
             writer.writerow([schedule[i][0], schedule[i][1], playlist[i], button_list[i].pressed])
 
-
 load_schedule()
-refresh_time = (23, 59)
-
-
-#   $$\     $$\                                 $$\                                  $$\
-#   $$ |    \__|                                $$ |                                 $$ |
-# $$$$$$\   $$\ $$$$$$\$$$$\   $$$$$$\        $$$$$$\    $$$$$$\  $$$$$$\   $$$$$$$\ $$$$$$$\
-# \_$$  _|  $$ |$$  _$$  _$$\ $$  __$$\       \_$$  _|  $$  __$$\ \____$$\ $$  _____|$$  __$$\
-#   $$ |    $$ |$$ / $$ / $$ |$$$$$$$$ |        $$ |    $$ |  \__|$$$$$$$ |\$$$$$$\  $$ |  $$ |
-#   $$ |$$\ $$ |$$ | $$ | $$ |$$   ____|        $$ |$$\ $$ |     $$  __$$ | \____$$\ $$ |  $$ |
-#   \$$$$  |$$ |$$ | $$ | $$ |\$$$$$$$\         \$$$$  |$$ |     \$$$$$$$ |$$$$$$$  |$$ |  $$ |
-#    \____/ \__|\__| \__| \__| \_______|         \____/ \__|      \_______|\_______/ \__|  \__|
-
 
 previous_time = (datetime.now().hour, datetime.now().minute)
 musics_path = os.getcwd()[0:-4] + "musics\\"
@@ -120,22 +93,189 @@ button_comm = button(bg, [icon_path + "button_comm.png", icon_path + "button_com
                     (163, height*3/4 + 23), [["",""]])
 
 def button_list_inital():
+    global button_list, button_delete, button_list_y, button_list_y_max
+
     button_list = [button(bg, [icon_path + "unpressed.png", icon_path + "pressed.png"], 
                         (680, height*3/4 - 57 + 65*i), [["%02d:%02d"%schedule[i],"%02d:%02d"%schedule[i]], [playlist[i],playlist[i]]],
-                        font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)], pressed=active[i]) for i in range(len(schedule))]
+                        font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)], 
+                        font_color=[[(40,40,40),(100,100,100)],[(40,40,40),(100,100,100)]], pressed=active[i]) for i in range(len(schedule))]
     button_list.append(button(bg, [icon_path + "unpressed_plus.png", icon_path + "pressed_plus.png"], 
                         (680, height*3/4 - 57 + 65*len(button_list)), [["",""]], font = ["Calibri"], font_size = [80], text_pos = [(0,0)]))
 
     button_delete = [button(surface=bg, image_path=[icon_path + "delete.png", icon_path + "delete.png"], 
-                        pos=(845, height*3/4 - 53 + 65*i), text=[["",""], ["",""]],
-                        font = ["Calibri","Lucida Console"], font_size = [40,17], text_pos = [(0,-7),(0,15)]) for i in range(len(schedule))]
+                        pos=(845, height*3/4 - 53 + 65*i), text=[["",""]]) for i in range(len(schedule))]
 
     button_list_y = 0
     button_list_y_max = len(button_list)*65 - 160
 
-    global button_list, button_delete, button_list_y, button_list_y_max
 
 button_list_inital()
+
+console = False
+def set_time_console_initial():
+    global icon_colon, box_hour, box_minute, box_browse, button_browse, button_save, button_cancel, focus
+    
+    icon_colon = button(bg, [icon_path + "console_time_colon.png", icon_path + "console_time_colon.png"],
+                    (width/2-35,height/2-80), [[":",":"]], font=["DSEG7 Modern Regular"], font_size=[100], font_color=[[(0,0,200),(0,0,200)]])
+    box_hour = button(bg, [icon_path + "console_time_up.png", icon_path + "console_time_down.png"],
+                    (width/2-197,height/2-80), [["88","88"],["!!","!!"]], font=["DSEG7 Modern Regular","DSEG7 Modern Regular"], font_size=[100,100], font_color=[[(150,150,150),(150,150,150)],[(0,0,200),(0,0,160)]], text_pos=[[0,0],[0,0]])
+    box_minute = button(bg, [icon_path + "console_time_up.png", icon_path + "console_time_down.png"],
+                    (width/2+15,height/2-80), [["88","88"],["!!","!!"]], font=["DSEG7 Modern Regular","DSEG7 Modern Regular"], font_size=[100,100], font_color=[[(150,150,150),(150,150,150)],[(0,0,200),(0,0,160)]], text_pos=[[0,0],[0,0]])
+    box_browse = button(bg, [icon_path + "browse_up.png", icon_path + "browse_up.png"],
+                    (width/2-250,height/2+60), [["bell.mp3","bell.mp3"]], font_size=[30], offset="left", font_color=[[(80,80,80),(40,40,40)]])
+    button_browse = button(bg, [icon_path + "console_up.png", icon_path + "console_down.png"],
+                    (width/2+120,height/2+60), [["Browse","Browse"]], font_size=[30])
+    button_save = button(bg, [icon_path + "console_up.png", icon_path + "console_down.png"],
+                    (width/2+10,height*3/4-55), [["Save","Save"]], font_size=[30])
+    button_cancel = button(bg, [icon_path + "console_up.png", icon_path + "console_down.png"],
+                    (width/2-130,height*3/4-55), [["Cancel","Cancel"]], font_size=[30])
+    focus = "console"
+
+def set_time_console_draw():
+    background = pg.draw.rect(bg, (180,180,180), [width/4,height/4,width/2,height/2], 0)
+    icon_colon.draw()
+    box_hour.draw()
+    box_minute.draw()
+    box_browse.draw()
+    button_browse.draw()
+    button_save.draw()
+    button_cancel.draw()
+
+    font = pg.font.SysFont("Lucida console", 50)
+    text1 = font.render("Add New Ring", True, (30, 30, 30), None)
+    text_rect1 = text1.get_rect(center=(width/2, height/4+50))
+
+    bg.blit(text1, text_rect1)
+
+
+def set_time_console_detect():
+    global focus, console
+    if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+        focus = "console"
+        box_hour.pressed = False
+        box_minute.pressed = False
+        box_browse.pressed = False
+        signal = box_hour.detect(event.pos)
+        if signal == "pressed":
+            focus = "hour"
+            for i in [0,1]:
+                box_hour.text[1][i] = "!!"
+
+        signal = box_minute.detect(event.pos)
+        if signal == "pressed":
+            focus = "minute"
+            for i in [0,1]:
+                box_minute.text[1][i] = "!!"
+
+        signal = box_browse.detect(event.pos)
+        if signal == "pressed":
+            focus = "browse"
+        
+        signal = button_browse.detect(event.pos)
+
+        if signal == "pressed":
+
+            button_browse.draw()
+            screen.blit(bg, (0, 0))
+            pg.display.update()
+            time.sleep(0.08)
+
+            root = Tkinter.Tk()
+            root.withdraw()
+            filename = tkFileDialog.askopenfilename(title = "Browse your .mp3 file", filetypes=(("mp3 files", "*.mp3"), ("All files", "*.*") ))
+            filename = filename.split('/')[-1]
+            for i in [0,1]:
+                box_browse.text[0][i] = filename
+            button_browse.pressed = False
+
+        signal = button_save.detect(event.pos)
+        if signal == "pressed":
+
+            button_cancel.draw()
+            screen.blit(bg, (0, 0))
+            pg.display.update()
+            time.sleep(0.08)
+            schedule.append((int(box_hour.text[1][0]), int(box_minute.text[1][0])))
+            playlist.append(box_browse.text[0][0])
+            active.append(False)
+            button_list_inital()
+            write_schedule()
+            console = False 
+
+        signal = button_cancel.detect(event.pos)
+        if signal == "pressed":
+
+            button_cancel.draw()
+            screen.blit(bg, (0, 0))
+            pg.display.update()
+            time.sleep(0.08)
+            console = False
+
+    if event.type == pg.KEYDOWN:
+        #print(event.unicode)
+        if focus == "hour":
+            if event.unicode == u"\u0008":
+                for i in [0,1]:
+                    for j in [1,0]:
+                        if box_hour.text[1][i][j] != "!":
+                            if j == 1:
+                                box_hour.text[1][i] = box_hour.text[1][i][0] + "!"
+                                break
+                            elif j == 0:
+                                box_hour.text[1][i] = "!!"
+                                break
+
+            elif event.unicode.encode('utf-8').isdigit():
+                for i in [0,1]:
+                    for j in [0,1]:
+                        if box_hour.text[1][i][j] == "!":
+                            if j == 0 and int(event.unicode.encode('utf-8')) <= 2:
+                                box_hour.text[1][i] = event.unicode.encode('utf-8') + "!"
+                                break
+                            elif j == 1:
+                                if (box_hour.text[1][i][0] == "2" and int(event.unicode.encode('utf-8')) <= 3 ) or box_hour.text[1][i][0] in ["0","1"] :
+                                    box_hour.text[1][i] = box_hour.text[1][i][0] + event.unicode.encode('utf-8')
+                                    box_hour.pressed = False
+                                    box_minute.pressed = True
+                                    focus = "minute"
+                                    break
+
+
+        elif focus == "minute":
+            if event.unicode == u"\u0008":
+                for i in [0,1]:
+                    for j in [1,0]:
+                        if box_minute.text[1][i][j] != "!":
+                            if j == 1:
+                                box_minute.text[1][i] = box_minute.text[1][i][0] + "!"
+                                break
+                            elif j == 0:
+                                box_minute.text[1][i] = "!!"
+                                break
+
+            elif event.unicode.encode('utf-8').isdigit():
+                for i in [0,1]:
+                    for j in [0,1]:
+                        if box_minute.text[1][i][j] == "!":
+                            if j == 0 and int(event.unicode.encode('utf-8')) <= 5:
+                                box_minute.text[1][i] = event.unicode.encode('utf-8') + "!"
+                                break
+                            elif j == 1 and box_minute.text[1][i][0] != "!":
+                                box_minute.text[1][i] = box_minute.text[1][i][0] + event.unicode.encode('utf-8')
+                                break
+
+
+        elif focus == "browse":
+            if event.unicode == u"\u0008":
+                for i in [0,1]:
+                    box_browse.text[0][i] = box_browse.text[0][i][:-1]
+            else:
+                
+                for i in [0,1]:
+                    box_browse.text[0][i] += event.unicode.encode('utf-8') 
+
+
+
 
 # volume trash
 volume_down = 0x0a
@@ -177,8 +317,6 @@ while running:
             print("\rLatest bell time:   %d:%d" % (now.hour, now.minute))
             if button_list[schedule.index((now.hour, now.minute))].pressed == False:
                 play_ring(playlist[schedule.index((now.hour, now.minute))])
-        elif (now.hour, now.minute) == refresh_time:
-            running = False
 
         previous_time = (now.hour, now.minute)
 
@@ -229,6 +367,8 @@ while running:
     msg = wrnfont.render("Communism", True, (170,170,170), None)
     bg.blit(msg, (250,height*3/4+35))
 
+    if console == True:
+        set_time_console_draw()
 
     screen.blit(bg, (0, 0))
     pg.display.update()
@@ -240,50 +380,67 @@ while running:
         if event.type == pg.QUIT:
             running = False
 
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+        if console == True:
+            set_time_console_detect()
+        else:
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
 
-            button_red.detect(event.pos)
+                button_red.detect(event.pos)
 
-            signal = button_comm.detect(event.pos)
-            if signal == "pressed":
-                pg.mixer.init()
-                pg.mixer.music.load(musics_path+"soviet_anthem.mp3")
-                pg.mixer.music.play()
-                # ctypes.windll.user32.SystemParametersInfoA(
-                #     20, 0, icon_path + "aji_purple_propaganda_supernova.jpg", 0)
+                signal = button_comm.detect(event.pos)
+                if signal == "pressed":
+                    pg.mixer.init()
+                    pg.mixer.music.load(musics_path+"soviet_anthem.mp3")
+                    pg.mixer.music.play()
+                    # ctypes.windll.user32.SystemParametersInfoA(
+                    #     20, 0, icon_path + "aji_purple_propaganda_supernova.jpg", 0)
 
-            elif signal == "unpressed":
-                pg.mixer.music.stop()
-                # ctypes.windll.user32.SystemParametersInfoA(
-                #     20, 0, icon_path + "cabbage.jpg", 0) 
+                elif signal == "unpressed":
+                    pg.mixer.music.stop()
+                    # ctypes.windll.user32.SystemParametersInfoA(
+                    #     20, 0, icon_path + "cabbage.jpg", 0) 
 
 
-            if button_list_box.collidepoint(event.pos):
-                [i.detect(event.pos) for i in button_list]
-                for i in range(len(button_delete)):
-                    signal = button_delete[i].detect(event.pos)
+                if button_list_box.collidepoint(event.pos):
+                    [i.detect(event.pos) for i in button_list[:-1]]
+                    signal = button_list[-1].detect(event.pos)
                     if signal == "pressed":
-                        del schedule[i], playlist[i]
-                        button_list_inital()
-                        break
-                write_schedule()
+                        button_list[-1].draw()
+                        pg.draw.rect(bg, (0,0,0), [674, height*3/4 + 103, 191, 60], 0)
+                        button_list_box = pg.draw.rect(bg, (170,170,170), [674, height*3/4 - 63, 191, 166], 2)
+                        screen.blit(bg, (0, 0))
+                        pg.display.update()
+                        time.sleep(0.08)
+                        button_list[-1].pressed = False
+                        set_time_console_initial()
+                        console = True
+
+                    for i in range(len(button_delete)):
+                        signal = button_delete[i].detect(event.pos)
+                        if signal == "pressed":
+                            del schedule[i], playlist[i]
+                            button_list_inital()
+                            break
+                    active = [i.pressed for i in button_list[:-1]]
+                    write_schedule()
 
 
-        elif event.type == pg.MOUSEBUTTONDOWN and event.button in [4,5]: 
+            elif event.type == pg.MOUSEBUTTONDOWN and event.button in [4,5]: 
 
-            if button_list_box.collidepoint(event.pos):
+                if button_list_box.collidepoint(event.pos):
 
-                if event.button == 5 and button_list_y < button_list_y_max:
-                    button_list_y += 20
-                    if button_list_y > button_list_y_max:
-                        button_list_y = button_list_y_max
+                    if event.button == 5 and button_list_y < button_list_y_max:
+                        button_list_y += 20
+                        if button_list_y > button_list_y_max:
+                            button_list_y = button_list_y_max
 
-                if event.button == 4 and button_list_y > 0:
-                    button_list_y -= 20
-                    if button_list_y < 0:
-                        button_list_y = 0
+                    if event.button == 4 and button_list_y > 0:
+                        button_list_y -= 20
+                        if button_list_y < 0:
+                            button_list_y = 0
 
-                for i in range(len(button_list)):
-                    button_list[i].pos = (680, height*3/4 - 57 + 65*i - button_list_y)
-                for i in range(len(button_delete)):
-                    button_delete[i].pos = (845, height*3/4 - 53 + 65*i - button_list_y)
+                    for i in range(len(button_list)):
+                        button_list[i].pos = (680, height*3/4 - 57 + 65*i - button_list_y)
+                    for i in range(len(button_delete)):
+                        button_delete[i].pos = (845, height*3/4 - 53 + 65*i - button_list_y)
+        
