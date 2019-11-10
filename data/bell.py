@@ -35,8 +35,12 @@ with open(os.devnull, 'w') as f:
 schedule = []
 playlist = []
 
-musics_path = os.getcwd()[:-4] + "/musics/"
-icon_path = os.getcwd() + "/icon/"
+if sys.platform == "win32" or "win64":
+    musics_path = os.getcwd()[0:-4] + "musics\\"
+    icon_path = os.getcwd() + "\\icon\\"
+elif sys.platform == "darwin":
+    musics_path = os.getcwd()[:-4] + "/musics/"
+    icon_path = os.getcwd() + "/icon/"
 
 
 def refresh_schedule():

@@ -1,5 +1,6 @@
 import os
 import sys
+
 with open(os.devnull, 'w') as f:
     # disable stdout
     oldstdout = sys.stdout
