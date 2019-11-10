@@ -3,8 +3,9 @@ import csv
 from datetime import*
 import time
 import random
-from ctypes import windll
-import ctypes
+import sys
+if sys.platform == "win32" or "win64":
+    import ctypes
 import Tkinter, tkFileDialog
 from button_class import*
 
@@ -12,7 +13,7 @@ from button_class import*
 
 # hide welcome message cuz it is annoying
 import os
-import sys
+
 with open(os.devnull, 'w') as f:
     # disable stdout
     oldstdout = sys.stdout
@@ -24,10 +25,12 @@ schedule = []
 active = []
 playlist = []
 
-
-musics_path = os.getcwd()[0:-4] + "musics\\"
-icon_path = os.getcwd() + "\\ygyy\\"
-
+if sys.platform == "win32" or "win64":
+    musics_path = os.getcwd()[0:-4] + "musics\\"
+    icon_path = os.getcwd() + "\\icon\\"
+elif sys.platform == "darwin":
+    musics_path = os.getcwd()[:-4] + "/musics/"
+    icon_path = os.getcwd() + "/icon/"
 
 def load_schedule():
     with open('schedule.csv') as schedule_csv:
@@ -66,9 +69,6 @@ def write_schedule():
 load_schedule()
 
 previous_time = (datetime.now().hour, datetime.now().minute)
-musics_path = os.getcwd()[0:-4] + "musics\\"
-icon_path = os.getcwd() + "\\icon\\"
-
 
 # pygame trash
 pg.init()
@@ -275,8 +275,6 @@ def set_time_console_detect():
                     box_browse.text[0][i] += event.unicode.encode('utf-8') 
 
 
-
-
 # volume trash
 volume_down = 0x0a
 volume_up = 0x09
@@ -287,12 +285,13 @@ volume_mute = 0x08
 def play_ring(ring):
     r = random.random()
     if button_red.pressed == True:
-        for i in range(50):
-            windll.user32.PostMessageA(
-                windll.user32.GetForegroundWindow(), 0x319, 0, volume_down*0x10000)
-        for i in range(35):
-            windll.user32.PostMessageA(
-                windll.user32.GetForegroundWindow(), 0x319, 0, volume_up*0x10000)
+        if sys.platform == "win32" or "win64":
+            for i in range(50):
+                ctypes.windll.user32.PostMessageA(
+                    ctypes.windll.user32.GetForegroundWindow(), 0x319, 0, volume_down*0x10000)
+            for i in range(35):
+                ctypes.windll.user32.PostMessageA(
+                    ctypes.windll.user32.GetForegroundWindow(), 0x319, 0, volume_up*0x10000)
 
         pg.mixer.init()
         pg.mixer.music.load(musics_path+ring)
