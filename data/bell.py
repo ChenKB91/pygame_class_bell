@@ -4,7 +4,7 @@ from datetime import*
 import time
 import random
 import sys
-if sys.platform == "win32" or "win64":
+if sys.platform == "win32" or sys.platform == "win64":
     import ctypes
 import Tkinter, tkFileDialog
 from button_class import*
@@ -25,7 +25,7 @@ schedule = []
 active = []
 playlist = []
 
-if sys.platform == "win32" or "win64":
+if sys.platform == "win32" or sys.platform == "win64":
     musics_path = os.getcwd()[0:-4] + "musics\\"
     icon_path = os.getcwd() + "\\icon\\"
 elif sys.platform == "darwin":
@@ -285,7 +285,7 @@ volume_mute = 0x08
 def play_ring(ring):
     r = random.random()
     if button_red.pressed == True:
-        if sys.platform == "win32" or "win64":
+        if sys.platform == "win32" or sys.platform == "win64":
             for i in range(50):
                 ctypes.windll.user32.PostMessageA(
                     ctypes.windll.user32.GetForegroundWindow(), 0x319, 0, volume_down*0x10000)
